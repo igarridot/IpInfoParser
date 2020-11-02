@@ -8,8 +8,7 @@ import (
 	"net/http"
 )
 
-//TODO: Try to manage Coordinates as [2]float64 from JSON Unmarshall
-type IpProperties struct {
+type IpInformation struct {
 	IpAddr      string `json:"ip"`
 	CityName    string `json:"city"`
 	RegionName  string `json:"region"`
@@ -21,28 +20,36 @@ type IpProperties struct {
 	ReadMe      string `json:"readme"`
 }
 
-func getIpInfo() (IpProperties, error) {
+type myHttpClient interface {
+	Get()
+}
 
-	var informationFomApi IpProperties
+type requester struct {
+	url string
+}
 
-	requestToApi, err := http.Get("http://ipinfo.org")
+func (r *requester) Get() (IpInformation, error) {
+
+	var ipAttributes IpInformation
+	httpClient := &http.Client{}
+	buildRequest, err := http.NewRequest("GET", r.url, nil)
+	resp, err := httpClient.Do(buildRequest)
 	if err != nil {
-		log.Println("ERROR: Cannot reach external resource http://ipinfo.org")
-		return IpProperties{}, errors.New("Please check IInternet onnection.")
+		log.Println("We cannot reach the endpoint.", r.url)
+		return IpInformation{}, errors.New("Incorrect GET")
 	}
 
-	defer requestToApi.Body.Close()
-	body, err := ioutil.ReadAll(requestToApi.Body)
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("ERROR: The request body is malformed.")
-		return IpProperties{}, errors.New("Cannot parse request body from external resource properly.")
+		log.Println("We cannot parse the JSON body", string(body))
+		return IpInformation{}, errors.New("Incorrect JSON parse")
 	}
 
-	err = json.Unmarshal(body, &informationFomApi)
+	err = json.Unmarshal(body, &ipAttributes)
 	if err != nil {
-		log.Println("ERROR: Cannot parse response body to JSON")
-		return IpProperties{}, errors.New("Some fields of the external resource has changed ot are not supported in this version.")
+		log.Println("We cannot unmarshal body to struct.")
+		return IpInformation{}, errors.New("Incorrect unmarshal")
 	}
-
-	return informationFomApi, nil
+	return ipAttributes, nil
 }

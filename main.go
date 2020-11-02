@@ -6,9 +6,13 @@ import (
 )
 
 func main() {
-	ipInfo, err := getIpInfo()
+
+	var request requester
+	request.url = "http://ipinfo.io/"
+
+	response, err := request.Get()
 	if err != nil {
-		log.Panic("We can't obtain the IP info.")
+		log.Panic("FATAL: Cannot make request properly.")
 	}
-	fmt.Printf("This is your public IP address: %s\nIt belongs to: %s.\nYou are located at %s, %s", ipInfo.IpAddr, ipInfo.OrgName, ipInfo.RegionName, ipInfo.CountryCode)
+	fmt.Println(response)
 }

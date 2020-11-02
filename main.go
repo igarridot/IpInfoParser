@@ -8,9 +8,8 @@ import (
 func main() {
 
 	var request requester
-	request.url = "http://ipinfo.io/"
+	response, err := request.Get("http://ipinfo.io/")
 
-	response, err := request.Get()
 	if err != nil {
 		log.Panic("FATAL: Cannot make request properly.")
 	}

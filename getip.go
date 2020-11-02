@@ -21,21 +21,19 @@ type IpInformation struct {
 }
 
 type myHttpClient interface {
-	Get()
+	Get() (IpInformation, error)
 }
 
-type requester struct {
-	url string
-}
+type requester struct{}
 
-func (r *requester) Get() (IpInformation, error) {
+func (r *requester) Get(url string) (IpInformation, error) {
 
 	var ipAttributes IpInformation
 	httpClient := &http.Client{}
-	buildRequest, err := http.NewRequest("GET", r.url, nil)
+	buildRequest, err := http.NewRequest("GET", url, nil)
 	resp, err := httpClient.Do(buildRequest)
 	if err != nil {
-		log.Println("We cannot reach the endpoint.", r.url)
+		log.Println("We cannot reach the endpoint.", url)
 		return IpInformation{}, errors.New("Incorrect GET")
 	}
 

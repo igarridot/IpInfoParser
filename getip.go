@@ -20,18 +20,28 @@ type IpInformation struct {
 	ReadMe      string `json:"readme"`
 }
 
-type myHttpClient interface {
-	Get() (IpInformation, error)
+type RequestBuilder interface {
+	Get(string) (IpInformation, error)
+}
+
+type CallMaker interface {
+	Do(*http.Request) (*http.Response, error)
 }
 
 type requester struct{}
+type callmaker struct{}
+
+func (c *callmaker) Do(request *http.Request) (*http.Response, error) {
+	client := &http.Client{}
+	return client.Do(request)
+}
 
 func (r *requester) Get(url string) (IpInformation, error) {
 
 	var ipAttributes IpInformation
-	httpClient := &http.Client{}
+	var callmakerInstance callmaker
 	buildRequest, err := http.NewRequest("GET", url, nil)
-	resp, err := httpClient.Do(buildRequest)
+	resp, err := callmakerInstance.Do(buildRequest)
 	if err != nil {
 		log.Println("We cannot reach the endpoint.", url)
 		return IpInformation{}, errors.New("Incorrect GET")

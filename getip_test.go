@@ -31,7 +31,7 @@ func (t HttpMockInterface) Do(request *http.Request) (*http.Response, error) {
 	return args.Get(0).(*http.Response), args.Error(1)
 }
 
-func TestExtractMetadata(t *testing.T) {
+func TestRequestBuilder(t *testing.T) {
 
 	clientResponse := &http.Response{
 		StatusCode: 200,
@@ -39,11 +39,11 @@ func TestExtractMetadata(t *testing.T) {
 	}
 
 	client := HttpMockInterface{}
-	requester := requester{}
-	httpRequest, _ := http.NewRequest("GET", "http://test.com/", nil)
+	httpClientStruct := myhttp{}
+	httpRequest, _ := http.NewRequest("GET", "http://ipinfo.io/", nil)
 	client.On("Do", httpRequest).Return(clientResponse, nil)
 	assert := require.New(t)
-	returnedValue, _ := requester.Get(client)
+	returnedValue, _ := httpClientStruct.RequestBuilder(client)
 
 	expectedOutput := IpInformation{
 		IpAddr:      "127.0.0.1",
@@ -53,7 +53,7 @@ func TestExtractMetadata(t *testing.T) {
 		Coordinates: "0.0,-0.0",
 		OrgName:     "Localhost",
 		PostalCode:  46000,
-		TimeZone:    "https://ipinfo.io/missingauth",
+		TimeZone:    "Europe/Madrid",
 		ReadMe:      "https://ipinfo.io/missingauth",
 	}
 
